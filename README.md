@@ -1,119 +1,114 @@
 # GuardCommit 🛡️
-> **Blazing fast Git AI code reviewer, secret leak detector & conventional commit generator.**
-> Stop pushing messy commit messages, broken diffs, and leaked API keys to production.
+> A fast, offline-first Git pre-commit hook that detects likely secrets before they reach Git history and uses AI to generate Conventional Commit messages and pull-request descriptions from staged diffs.
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests Passing](https://img.shields.io/badge/tests-10%20passed-brightgreen.svg)]()
-[![Zero Heavy SDKs](https://img.shields.io/badge/dependencies-lightweight-purple.svg)]()
+[![Zero Heavy SDKs](https://img.shields.io/badge/dependencies-lightweight%20(httpx)-purple.svg)]()
 [![Supports Local LLMs](https://img.shields.io/badge/Ollama-100%25%20Free%20%26%20Offline-orange.svg)]()
 
 ---
 
-## Why GuardCommit?
+### The Three Pillars
 
-Most Git commit tools are either slow, require heavy 200MB SDKs, or only write generic one-line commit messages without checking if your code actually works or if you accidentally leaked an `.env` or OpenAI secret key.
+* 🔒 **Blocks likely API keys, tokens, private keys, and `.env` files before commit** using offline regex rules and Shannon entropy algorithms.
+* ✨ **Generates Conventional Commits and PR descriptions from staged diffs** with interactive terminal selection.
+* 🦙 **Works locally with Ollama** (100% free & offline privacy) or through **Groq**, **Gemini**, and **OpenAI**.
 
-**GuardCommit** is a zero-bloat, production-grade terminal tool built for modern developers:
-1. **🛡️ Offline Secret Scanner:** Catches AWS, OpenAI, Stripe, GitHub tokens, and `.env` files *before* you push.
-2. **🧠 AI Pre-Commit Code Reviewer:** Performs an automated senior-engineer code review on staged diffs to catch logic bugs and performance leaks.
-3. **✨ Conventional Commit 1.0.0 Generator:** Analyzes unified git diffs and crafts clean semantic commit titles + bulleted summaries.
-4. **🚀 Instant Pull Request Generator:** Compares branches against `main` and creates structured GitHub PR markdown ready to paste.
-5. **⚡ Multi-Model & Local First:** Works with **Ollama** (100% local, completely free, zero data leaving your machine), **Groq** (sub-500ms lightning inference), **Google Gemini**, and **OpenAI/DeepSeek**.
-6. **📊 Real-time Token & Sub-Cent Cost Tracking:** Displays exact tokens, latency, and costs directly in your terminal.
+---
+
+## ⚡ Live Terminal Flow
+
+```text
+# 1. When an API key or .env is accidentally staged:
+$ git add .env
+$ guardcommit commit
+🚨 BLOCKED: 1 high-risk credential detected in staged diff!
+┌──────────┬──────────────────────────────────┬─────────┬──────┬──────────────────┐
+│ Severity │ Rule / Secret Type               │ File    │ Line │ Snippet (Masked) │
+├──────────┼──────────────────────────────────┼─────────┼──────┼──────────────────┤
+│ CRITICAL │ Restricted Environment File      │ .env    │ -    │ .env             │
+└──────────┴──────────────────────────────────┴─────────┴──────┴──────────────────┘
+⚠️ Commit aborted to protect your repository from credential leaks.
+
+# 2. When your staged code is clean:
+$ git add src/auth.py
+$ guardcommit commit
+✔ Security Audit Passed! (Zero sensitive keys detected)
+⚡ Analyzing diff with Groq...
+
+Select a Conventional Commit Title:
+  [1] feat(auth): add OAuth2 session token validation utility
+  [2] feat(auth): introduce HMAC-SHA256 signature verifier
+  [3] refactor(auth): sanitize user payload before hashing
+Choose an option [1]: 1
+✔ Committed successfully! (420ms | Cost: $0.0003)
+```
 
 ---
 
 ## 🚀 Quickstart (30 Seconds)
 
-### 1. Install via pip
+### 1. Install Directly via Git
 ```bash
-pip install guardcommit
+pip install git+https://github.com/abhishekkoiri/guardcommit.git
 ```
 *(Or clone this repo and run `pip install -e .`)*
 
-### 2. Configure Your Provider
-Run the interactive setup wizard:
+### 2. Configure Your Preferred Provider
+Run the interactive configuration wizard:
 ```bash
 guardcommit config
 ```
-*Supports Groq (free), Ollama (free local), Gemini, or OpenAI.*
+* **Ollama (Default for Privacy):** 100% local, zero keys needed.
+* **Groq (Default for Cloud):** Ultra-fast sub-500ms inference with free API key.
+* **Google Gemini & OpenAI:** Standard cloud APIs with tiered model pricing.
 
----
-
-## 💻 Usage & Commands
-
-### 1. Generate a Semantic Conventional Commit
-Stage your changes, then run:
-```bash
-guardcommit commit
-```
-* **Interactive Terminal UI:** Displays 3 clean commit options conforming to Conventional Commits standard.
-* **Auto-Blocks Leaks:** Automatically aborts commit if sensitive API credentials are detected in the diff!
-
-### 2. Scan Staged Changes for Leaked Secrets
-```bash
-guardcommit scan
-```
-Detects:
-* AWS Access Keys (`AKIA...`)
-* OpenAI / Anthropic Secret Keys (`sk-proj-...`, `sk-ant-...`)
-* GitHub Personal Access Tokens (`ghp_...`, `github_pat_...`)
-* Stripe API Keys (`sk_live_...`)
-* Private SSH/RSA Keys (Standard RSA / OpenSSH private key headers)
-* Staged `.env`, `.env.local`, `credentials.json`, `*.pem` files.
-* Shannon entropy randomness checks for suspicious secrets.
-
-### 3. Run Pre-Commit AI Code Review
-```bash
-guardcommit review
-```
-Produces an actionable, markdown-rendered review report covering:
-* Logic bugs & edge cases
-* Security flaws (SQL injection, unsafe input)
-* Async bottlenecks & unhandled exceptions
-
-### 4. Generate a Full GitHub Pull Request
-```bash
-guardcommit pr --base main --output pr.md
-```
-Generates complete PR summaries, architectural impacts, and testing checklists comparing your branch against `main`.
-
-### 5. Install Automated Git Pre-Commit Hook
-Prevent anyone on your team from accidentally committing secrets:
+### 3. Install Automated Pre-Commit Protection
+Enable automated secret blocking across your repository:
 ```bash
 guardcommit hook install
 ```
-*Installs a lightweight hook into `.git/hooks/pre-commit`. Now, every `git commit` is automatically verified!*
-
-To remove:
-```bash
-guardcommit hook uninstall
-```
+*Now, whenever you run `git commit`, GuardCommit automatically verifies staged changes before Git allows the commit!*
 
 ---
 
-## ⚡ Supported LLM Providers
+## 💻 CLI Command Reference
 
-| Provider | Speed | Cost | Privacy |
+| Command | Description |
+| :--- | :--- |
+| `guardcommit scan` | Scan staged files & diff for leaked API keys, tokens, and `.env` files. |
+| `guardcommit commit` | Scan diff for secrets, then generate Conventional Commit options. |
+| `guardcommit review` | Perform an automated pre-commit AI code review on staged diffs. |
+| `guardcommit pr --base main` | Compare current branch against base and output full GitHub PR markdown. |
+| `guardcommit hook install` | Install automated Git pre-commit hook into `.git/hooks/pre-commit`. |
+| `guardcommit hook uninstall` | Remove GuardCommit pre-commit hook. |
+| `guardcommit config` | Configure default provider, model, and API keys. |
+
+---
+
+## ⚡ Supported Providers & Models
+
+| Provider | Supported Models | Speed | Privacy & Cost |
 | :--- | :--- | :--- | :--- |
-| **Ollama** *(Llama 3, Qwen, Mistral)* | 🚀 Fast | **$0.00 (100% Free)** | 🔒 100% Local (Zero data leaves device) |
-| **Groq** *(Qwen 27B / Llama 3)* | ⚡ Ultra-Fast (<500ms) | **Free tier available** | Cloud |
-| **Google Gemini** *(2.5 Flash)* | 🚀 Very Fast | Sub-cent ($0.00004) | Cloud |
-| **OpenAI / DeepSeek** | 🚀 Fast | Standard API rate | Cloud |
+| **Ollama** | `llama3.2`, `qwen2.5-coder`, `mistral` | 🚀 Fast | 🔒 100% Local (Free) |
+| **Groq** | `qwen/qwen3.8-27b`, `openai/gpt-oss-20b` | ⚡ Ultra-Fast (<500ms) | Free Developer Tier |
+| **Google Gemini** | `gemini-2.0-flash`, `gemini-3.1-flash-lite`, `gemini-2.5-pro` | 🚀 Very Fast | Sub-cent ($0.075 / 1M) |
+| **OpenAI / DeepSeek** | `gpt-4o-mini`, `deepseek-chat` | 🚀 Fast | Standard API rate |
 
 ---
 
 ## 🧪 Testing & Verification
 
-Run the comprehensive unit test suite:
+Run the automated test suite locally:
 ```bash
 pytest -v
 ```
 
 ---
 
-## 🤝 Contributing & License
-
-Contributions are welcome! Please feel free to open a Pull Request or Issue.
-Licensed under the [MIT License](LICENSE).
+## 📄 Trust & Documentation
+* [Security Policy & Responsible Disclosure](SECURITY.md)
+* [Contributing Guidelines](CONTRIBUTING.md)
+* [Changelog & Releases](CHANGELOG.md)
+* [MIT License](LICENSE)
