@@ -17,6 +17,21 @@
 
 ---
 
+## 💡 Why Not Just `.gitignore`?
+
+`.gitignore` only ignores **entire files by name**. It is completely blind to secrets accidentally pasted inside legitimate source code files (`auth.py`, `config.ts`, `database.go`) that you *must* commit.
+
+| Security Feature | `.gitignore` / `.dockerignore` | **GuardCommit** 🛡️ |
+| :--- | :---: | :---: |
+| **Blocks known filenames (`.env`, `id_rsa`)** | ✅ Yes (Only if manually added) | ✅ **Yes** (Built-in offline rules) |
+| **Inspects code diffs for hardcoded API keys** | ❌ **No (Blind to contents)** | ✅ **Yes** (AWS, OpenAI, Stripe, GitHub, etc.) |
+| **Detects high-entropy random secret tokens** | ❌ **No** | ✅ **Yes** (Shannon Entropy math) |
+| **Generates Conventional Commit messages** | ❌ **No** | ✅ **Yes** (AI Conventional Commits 1.0.0) |
+| **Generates Pull Request descriptions** | ❌ **No** | ✅ **Yes** |
+| **Automated Git pre-commit protection** | ❌ **No** | ✅ **Yes** (`guardcommit hook install`) |
+
+---
+
 ## ⚡ Live Terminal Flow
 
 ```text
